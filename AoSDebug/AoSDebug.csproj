@@ -61,4 +61,8 @@
   </Content>
 </ItemGroup>
 
+<ItemGroup>
+  <Folder Include="assets\aosdebug\" />
+</ItemGroup>
+
 </Project>

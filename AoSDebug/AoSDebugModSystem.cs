@@ -10,7 +10,7 @@ namespace AoSDebug
     {
         public static ICoreServerAPI sapi;
         public Harmony harmony;
-        public static int message_delta = 30000; //No more than once every 30 seconds
+        public static int message_delta = 30;
         public static int last_message_time_OnTransitionNow = 0;
         public static int message_count_OnTransitionNow = 0;
 
@@ -48,9 +48,8 @@ namespace AoSDebug
         [HarmonyPatch(typeof(CollectibleObject), "OnTransitionNow")]
         class PatchOnTransitionNow
         {
-            public static bool Prefix(CollectibleObject __instance, ref ItemStack __result, out bool __state, ItemSlot slot, TransitionableProperties props)
-            {
-                __state = false;
+            public static bool Prefix(CollectibleObject __instance, ref ItemStack __result, ItemSlot slot, TransitionableProperties props)
+            {                
                 if (props?.TransitionedStack?.ResolvedItemstack is null) 
                 {
                     message_count_OnTransitionNow++;
@@ -64,8 +63,7 @@ namespace AoSDebug
                         }
                         last_message_time_OnTransitionNow = servertime;
                         message_count_OnTransitionNow = 0;
-                    }
-                    __state = true;
+                    }                    
                     __result = new ItemStack();
                     return false;
                 }
