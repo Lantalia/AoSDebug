@@ -1,0 +1,14 @@
+{
+    "type": "code",
+    "modid": "aosdebug",
+    "name": "AoSDebug",
+    "authors": [
+        "Lantalia"
+    ],
+    "description": "To be added",
+    "version": "1.0.0",
+    "dependencies": {
+        "game": ""
+    },
+    "side": "Server"
+}
