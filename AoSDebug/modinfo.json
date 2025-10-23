@@ -5,8 +5,8 @@
     "authors": [
         "Lantalia"
     ],
-    "description": "To be added",
-    "version": "1.0.0",
+    "description": "Prevent certain exceptions from taking down the server, illuminate certain other exceptions so their root cause can be identified",
+    "version": "1.0.2",
     "dependencies": {
         "game": ""
     },
