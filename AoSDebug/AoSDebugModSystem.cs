@@ -66,10 +66,8 @@ namespace AoSDebug
             var itemizer = sapi.ChatCommands.Get("itemizer");
             if (itemizer is not null)
             {
-                itemizer.RequiresPrivilege(Privilege.setwelcome);
+                itemizer.RequiresPrivilege("itemizer");
             }
-            var role = sapi.ChatCommands.Get("role");
-            var player = sapi.ChatCommands.Get("player");
 
         }
 
