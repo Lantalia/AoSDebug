@@ -1,0 +1,10 @@
+[
+    {
+        "file": "foodshelves:itemtypes/cutice.json",
+        "op": "replace",
+        "path": "/transitionableProps/0/transitionHours/avg",
+        "side": "server",
+        "value": 48,
+        "dependsOn": [ { "modid": "foodshelves" } ]
+    }
+]

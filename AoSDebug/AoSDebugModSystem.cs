@@ -6,7 +6,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System;
 
 namespace AoSDebug
@@ -17,26 +17,21 @@ namespace AoSDebug
         public static ICoreServerAPI sapi;
         public Harmony harmony;
         public static int message_delta = 30;
-        private static Dictionary<int, (int count, int last_message_time)> throttledMessages = new Dictionary<int, (int count, int last_message_time)>();
+        private static ConcurrentDictionary<int, (int count, int last_message_time)> throttledMessages = new ConcurrentDictionary<int, (int count, int last_message_time)>();
+
         private static void RunIfNotThrottled(Action<int> message, [CallerLineNumber] int lineNumber = 0)
         {
-            if (!throttledMessages.TryGetValue(lineNumber, out var entry))
-            {
-                entry = (0, -message_delta);
-            }
+            var entry = throttledMessages.GetOrAdd(lineNumber, (0, -message_delta));
 
             int serverTime = sapi.Server.ServerUptimeSeconds;
 
             if (entry.last_message_time + message_delta > serverTime)
             {
-                entry.count++;
-                throttledMessages[lineNumber] = entry;
+                throttledMessages.TryUpdate(lineNumber, (entry.count+1,entry.last_message_time),entry);
                 return;
             }
             message(entry.count);
-            entry.count = 0;
-            entry.last_message_time = serverTime;
-            throttledMessages[lineNumber] = entry;
+            throttledMessages[lineNumber] = (0, serverTime); // More important to update last message time than to be perfectly accurate on count
         }
         public override void Start(ICoreAPI api)
         {

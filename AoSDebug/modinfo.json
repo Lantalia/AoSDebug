@@ -6,10 +6,11 @@
         "Lantalia"
     ],
     "description": "Prevent certain exceptions from taking down the server, illuminate certain other exceptions so their root cause can be identified",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "dependencies": {
-        "game": "",
-        "itemizer": ">=1.0.0"
+        "game": "1.20.0",
+        "itemizer": "1.0.0",
+        "foodshelves":  "1.0.0"
     },
     "side": "Server"
 }

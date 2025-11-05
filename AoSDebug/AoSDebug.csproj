@@ -61,8 +61,6 @@
   </Content>
 </ItemGroup>
 
-<ItemGroup>
-  <Folder Include="assets\aosdebug\" />
-</ItemGroup>
+<ProjectExtensions><VisualStudio><UserProperties modinfo_1json__JsonSchema="json5" /></VisualStudio></ProjectExtensions>
 
 </Project>
