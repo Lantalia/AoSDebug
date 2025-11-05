@@ -68,6 +68,9 @@ namespace AoSDebug
             {
                 itemizer.RequiresPrivilege(Privilege.setwelcome);
             }
+            var role = sapi.ChatCommands.Get("role");
+            var player = sapi.ChatCommands.Get("player");
+
         }
 
         // Placeholder untill we need more live feedback
@@ -80,6 +83,42 @@ namespace AoSDebug
                 .HandleWith(_ => { return TextCommandResult.Success("Status"); });
         }
 
+        // Defuse ?chisel? bombs
+        [HarmonyPatch(typeof(BlockShapeFromAttributes), "getCollisionBoxes")]
+        class PatchBlockShapeFromAttributesGetCollisionBoxes
+        {
+            private static readonly Cuboidf[] fullCube = new Cuboidf[] { new(0, 0, 0, 1, 1, 1) };
+            /*
+            // Retained for debugging purposes
+            public static bool Prefix(BlockShapeFromAttributes __instance, ref Cuboidf[] __result, IBlockAccessor blockAccessor, BlockPos pos, BEBehaviorShapeFromAttributes bect, IShapeTypeProps cprops)
+            {
+                return true;
+            }
+
+            public static void Postfix(Cuboidf[] __result)
+            {
+                if (__result is not null)
+                {
+                    RunIfNotThrottled(
+                        count =>
+                        {
+                            sapi.Logger.Event("BlockShapeFromAttributes.getCollisionBoxes returning {0} boxes; {1} ; elided {2} other calls", __result?.Length, string.Join("; ", Array.ConvertAll(__result, p => p.ToString())), count);
+                        });
+                }
+            } */
+            public static Exception Finalizer(Exception __exception, ref Cuboidf[] __result)
+            {
+                if (__exception is not null)
+                {
+                    RunIfNotThrottled(count =>
+                    {
+                        sapi.Logger.Event("BlockShapeFromAttributes.getCollisionBoxes threw exception {0}, returning full cube; elided {1} other calls", __exception?.ToString(), count);
+                    });
+                    __result = fullCube;
+                }
+                return null;
+            }
+        }
 
         // Defuse rot bombs
         [HarmonyPatch(typeof(CollectibleObject), "OnTransitionNow")]
