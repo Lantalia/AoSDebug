@@ -1,13 +1,14 @@
-﻿using System.Runtime.CompilerServices;
-using HarmonyLib;
+﻿using HarmonyLib;
 using ProperVersion;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
-using System.Collections.Concurrent;
-using System;
 
 namespace AoSDebug
 {
@@ -223,6 +224,49 @@ namespace AoSDebug
                     });
                 }
                 return true;
+            }
+        }
+
+
+        //Quantum hopper fix. SHould look into removing at 1.21.6
+        [HarmonyPatch]
+        public class PatchHoppersQH
+        {
+
+            [HarmonyReversePatch]
+            [HarmonyPatch(typeof(Block), nameof(Block.OnEntityCollide))]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            public static void BaseMethodDummy(BlockHopper instance, IWorldAccessor world, Entity entity,
+                BlockPos pos, BlockFacing facing, Vec3d collideSpeed, bool isImpact) =>
+                throw new NotImplementedException("It's a stub");
+
+            [HarmonyPatch(typeof(BlockHopper), nameof(BlockHopper.OnEntityCollide))]
+            static bool Prefix(BlockHopper __instance, ref IWorldAccessor world, ref Entity entity,
+                ref BlockPos pos, ref BlockFacing facing, ref Vec3d collideSpeed, ref bool isImpact)
+            {
+
+                BaseMethodDummy(__instance, world, entity, pos, facing, collideSpeed, isImpact);
+                if (facing != BlockFacing.UP)
+                    return false;
+                EntityItem inWorldItem = entity as EntityItem;
+                if (inWorldItem == null || world.Side != EnumAppSide.Server || world.Rand.NextDouble() < 0.9)
+                    return false;
+                BlockPos bp = pos.Copy();
+                sapi.Event.EnqueueMainThreadTask((Action)(() =>
+                {
+                    BlockEntity blockEntity = sapi.World.BlockAccessor.GetBlockEntity(bp);
+                    if (!inWorldItem.Alive || !(blockEntity is BlockEntityItemFlow blockEntityItemFlow2))
+                        return;
+                    WeightedSlot bestSuitedSlot = blockEntityItemFlow2.Inventory.GetBestSuitedSlot((ItemSlot)inWorldItem.Slot, (ItemStackMoveOperation)null, (List<ItemSlot>)null);
+                    if (bestSuitedSlot.slot == null)
+                        return;
+                    inWorldItem.Slot.TryPutInto(sapi.World, bestSuitedSlot.slot);
+                    if (inWorldItem.Slot.StackSize > 0)
+                        return;
+                    inWorldItem.Itemstack = (ItemStack)null;
+                    inWorldItem.Alive = false;
+                }), "hopperitempickup");
+                return false;
             }
         }
     }
