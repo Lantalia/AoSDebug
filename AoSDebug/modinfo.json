@@ -6,7 +6,7 @@
         "Lantalia"
     ],
     "description": "Prevent certain exceptions from taking down the server, illuminate certain other exceptions so their root cause can be identified",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "dependencies": {
         "game": "1.21.0",
     },
