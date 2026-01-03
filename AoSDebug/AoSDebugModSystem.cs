@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using HarmonyLib;
-using ProperVersion;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
@@ -74,6 +73,7 @@ namespace AoSDebug
                 .WithDescription("aos debug controls")
                 .RequiresPrivilege(Privilege.controlserver)
                 .HandleWith(_ => { return TextCommandResult.Success("Status"); });
+
         }
 
         // Defuse ?chisel? bombs
