@@ -1,9 +1,10 @@
-﻿using HarmonyLib;
-using ProperVersion;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using HarmonyLib;
+using ProperVersion;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
@@ -227,6 +228,29 @@ namespace AoSDebug
             }
         }
 
+        [HarmonyPatch(typeof(ItemScythe), "performActions")]
+        class PatchItemScythePerformActions
+        {
+            static void Prefix(out BlockPos __state, float secondsPassed, EntityAgent byEntity, ItemSlot slot, BlockSelection blockSelection)
+            {
+                __state = blockSelection?.Position?.Copy();
+            }
+            public static Exception Finalizer(BlockPos __state, Exception __exception)
+            {
+                if (__exception is not null)
+                {
+                    RunIfNotThrottled(count =>
+                    {
+                        sapi.Logger.Event("ItemScythe.performActions at {1} threw exception  {0} , returning null; elided {1} other calls", __exception?.ToString(), __state?.ToString(), count);
+                    });
+                } /*
+                else
+                {
+                    sapi.Logger.Event("ItemScythe.performActions at {0}", __state?.ToString());
+                }*/
+                return null;
+            }
+        }
 
         //Quantum hopper fix. SHould look into removing at 1.21.6
         [HarmonyPatch]
@@ -298,5 +322,24 @@ namespace AoSDebug
    at Vintagestory.Common.BlockAccessorBase.WalkBlocks(BlockPos minPos, BlockPos maxPos, Action`4 onBlock, Boolean centerOrder) in VintagestoryLib\Common\API\BlockAccessorBase.cs:line 281
    at FromGoldenCombs.BlockEntities.BELangstrothStack.OnScanForFlowers(Single dt)
    at Vintagestory.Common.GameTickListener.OnTriggered(Int64 ellapsedMilliseconds) in VintagestoryLib\Common\Model\GameTickListener.cs:line 25
+
+
+4.1.2026 16:25:29 [Warning] Error when testing to spawn entity shiver-surface at position X=129137,Y=156,Z=155525, can report to dev team but otherwise should do no harm.
+4.1.2026 16:25:29 [Error] Exception: Object reference not set to an instance of an object.
+   at Vintagestory.Server.ServerSystemEntitySpawner.CanSpawnAt_offthread(EntityProperties type, Vec3i spawnPosition, RuntimeSpawnConditions sc, IWorldChunk[] chunkCol) in VintagestoryLib\Server\Systems\World\EntitySpawner.cs:line 544
+
+
+4.1.2026 16:26:21 [Notification] Client Tassa tried to place a block but rejected because OnPlaceBlock returns false. Failure code entityintersecting
+
+4.1.2026 16:28:16 [Error] Exception: Object reference not set to an instance of an object.
+   at Vintagestory.GameContent.ItemScythe.CanMultiBreak(Block block) in VSSurvivalMod\Item\ItemScythe.cs:line 65
+   at Vintagestory.GameContent.ItemShears.DamageNearbyBlocks(IPlayer player, BlockSelection blockSel, Single damage, Int32 leftDurability) in VSSurvivalMod\Item\ItemShears.cs:line 36
+   at Vintagestory.GameContent.ItemShears.OnBlockBreaking(IPlayer player, BlockSelection blockSel, ItemSlot itemslot, Single remainingResistance, Single dt, Int32 counter) in VSSurvivalMod\Item\ItemShears.cs:line 26
+   at Vintagestory.Server.ServerSystemInventory.OnUsingTick(Single dt) in VintagestoryLib\Server\Systems\Inventory.cs:line 86
+   at Vintagestory.Common.GameTickListener.OnTriggered(Int64 ellapsedMilliseconds) in VintagestoryLib\Common\Model\GameTickListener.cs:line 25
+   at Vintagestory.Common.EventManager.TriggerGameTick_Patch0(EventManager this, Int64 ellapsedMilliseconds, IWorldAccessor world)
+
+4.1.2026 19:33:57 [Error] Exception: Unable to read beyond the end of the stream.
+   at SimplePotteryWheel.ClayWheelEntity.OnReceivedClientPacket(IPlayer player, Int32 packetid, 
 
 */
