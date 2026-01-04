@@ -28,6 +28,7 @@ namespace AoSDebug
         private CheckCleanThread checkCleanThread;
         
         public static int processInterval = 50;
+        const int softMaxCheckQueueLength = 100;
 
         private bool saveToWorld = false;
         private int blocksRemapped = 0;
@@ -106,6 +107,11 @@ namespace AoSDebug
 
         private TextCommandResult handleCleanChunkAtPlayer(TextCommandCallingArgs args)
         {
+            var clqCount = checkCleanQueue.Count;
+            if (clqCount > softMaxCheckQueueLength)
+            {
+                return TextCommandResult.Error("Too many chunks already queued " + clqCount + " wait for the current work to finish first");
+            }
             var player = args.Caller.Player;
             var pos = player.Entity.Pos.AsBlockPos;
             int radius = (int)args[0];
@@ -202,6 +208,7 @@ namespace AoSDebug
         class CheckCleanThread : IAsyncServerSystem
         {
             const int chunksize = GlobalConstants.ChunkSize;
+            const int softMaxCleanQueueLength = 1000;
 
             public static int checkCleanInterval = 10;
             private ConcurrentQueue<BlockPos> checkCleanQueue;
@@ -223,6 +230,11 @@ namespace AoSDebug
             }
             public void OnSeparateThreadTick()
             {
+                if (performCleanQueue.Count > softMaxCleanQueueLength)
+                {
+                    // There is already more than enough for the main thread to do, no need to overload the queue
+                    return;
+                }
                 List<int> reusableList = new List<int>();
                 if (checkCleanQueue.TryDequeue(out BlockPos pos))
                 {
