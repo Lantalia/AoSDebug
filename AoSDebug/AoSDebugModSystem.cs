@@ -10,6 +10,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using Vintagestory.ServerMods.WorldEdit;
 
 namespace AoSDebug
 {
@@ -251,6 +252,23 @@ namespace AoSDebug
                 return null;
             }
         }
+
+        // Stop unhandled exception when using chisel tool in world edit while no itemstack is selected
+
+        [HarmonyPatch(typeof(PaintBrushTool), "ApplyToolBuild")]
+        class PatcPaintBrushToolApplyToolBuild
+        {
+            public static bool Prefix(PaintBrushTool __instance, WorldEdit worldEdit, Block placedBlock, int oldBlockId, BlockSelection blockSel, BlockPos targetPos, ItemStack withItemStack)
+            {
+                if (withItemStack is null || __instance?.ba is null)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
+
+
 
         //Quantum hopper fix. SHould look into removing at 1.21.6
         [HarmonyPatch]
